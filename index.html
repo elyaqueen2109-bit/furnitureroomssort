@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Sort Furniture by Rooms | There is...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', 'Comic Neue', sans-serif;
+            background: radial-gradient(circle at 20% 10%, #3b2a6b 0%, #1a1038 60%, #0b0620 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: -20%; left: -10%;
+            width: 60%; height: 60%;
+            background: radial-gradient(circle, rgba(255, 150, 210, 0.35), transparent 70%);
+            filter: blur(70px);
+            z-index: -2;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            bottom: -20%; right: -10%;
+            width: 60%; height: 60%;
+            background: radial-gradient(circle, rgba(150, 200, 255, 0.35), transparent 70%);
+            filter: blur(70px);
+            z-index: -2;
+        }
+
+        .game-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: linear-gradient(160deg, rgba(45, 32, 90, 0.95), rgba(20, 12, 50, 0.95));
+            backdrop-filter: blur(8px);
+            border-radius: 55px;
+            box-shadow:
+                0 25px 60px rgba(0,0,0,0.6),
+                0 0 0 2px rgba(255, 170, 220, 0.35),
+                0 0 50px rgba(180, 140, 255, 0.35);
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff9ed8 0%, #b18cff 50%, #9ed8ff 100%);
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.9rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 22px rgba(255, 150, 220, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .sub {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        /* ПАНЕЛЬ ПРЕДМЕТОВ */
+        .items-panel {
+            background: rgba(255,255,255,0.06);
+            border: 2px dashed rgba(255, 170, 220, 0.4);
+            border-radius: 40px;
+            margin: 20px;
+            padding: 15px;
+        }
+        .items-title {
+            color: #ffc2e8;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 170, 220, 0.7);
+            letter-spacing: 0.5px;
+        }
+        .items-tray {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        .item-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 8px;
+            width: 100px;
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            box-shadow: 0 0 18px rgba(180, 140, 255, 0.4);
+            transition: transform 0.15s, box-shadow 0.2s;
+            user-select: none;
+            border: 2px solid rgba(255, 170, 220, 0.5);
+        }
+        .item-card:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 0 26px rgba(255, 150, 220, 0.8);
+        }
+        .item-card:active { cursor: grabbing; }
+        .item-card img {
+            max-width: 100%;
+            max-height: 70px;
+            object-fit: contain;
+        }
+        .item-card .item-name {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #3b2566;
+            margin-top: 5px;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .item-card .placeholder-mini {
+            width: 100%;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #ffe6f5, #e6e0ff);
+            border-radius: 14px;
+            color: #b18cff;
+            font-weight: bold;
+            font-size: 0.65rem;
+            text-align: center;
+            padding: 3px;
+        }
+
+        /* КОМНАТЫ */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            padding: 0 20px;
+        }
+        .room {
+            background: linear-gradient(160deg, #3b2566 0%, #4a2878 50%, #5a3288 100%);
+            border-radius: 35px;
+            border: 3px solid rgba(180, 220, 255, 0.6);
+            box-shadow: inset 0 0 40px rgba(180, 140, 255, 0.3), 0 0 30px rgba(255, 150, 220, 0.3);
+            padding: 14px;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .room.drag-over {
+            border-color: #ffc2e8;
+            box-shadow: inset 0 0 50px rgba(255, 170, 220, 0.5), 0 0 40px rgba(255, 150, 220, 0.7);
+        }
+        .room-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+        }
+        .room-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #ffe6f5, #e6e0ff);
+            box-shadow: 0 0 14px rgba(255, 170, 220, 0.6);
+            border: 2px solid rgba(255, 200, 240, 0.7);
+            flex-shrink: 0;
+        }
+        .room-avatar.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #b18cff;
+            font-weight: bold;
+        }
+        .room-name {
+            color: #ffc2e8;
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-shadow: 0 0 12px rgba(255, 170, 220, 0.8);
+            letter-spacing: 0.5px;
+        }
+        .room-zone {
+            flex: 1;
+            min-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+            padding: 6px;
+            border-radius: 20px;
+            transition: background 0.2s;
+        }
+        .room.drag-over .room-zone {
+            background: rgba(255, 200, 240, 0.08);
+        }
+
+        .placed-item {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 6px;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 0 14px rgba(255, 170, 220, 0.55);
+            border: 2px solid rgba(255, 170, 220, 0.6);
+            animation: pop 0.3s ease-out;
+        }
+        @keyframes pop {
+            0% { transform: scale(0.3); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .placed-item img {
+            max-width: 100%;
+            max-height: 50px;
+            object-fit: contain;
+        }
+        .placed-item .placeholder-mini {
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #ffe6f5, #e6e0ff);
+            border-radius: 10px;
+            color: #b18cff;
+            font-weight: bold;
+            font-size: 0.55rem;
+            text-align: center;
+            padding: 2px;
+        }
+        .placed-item .placed-name {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #3b2566;
+            text-align: center;
+            line-height: 1.05;
+            margin-top: 3px;
+        }
+        .remove-btn {
+            position: absolute;
+            top: -7px;
+            right: -7px;
+            background: linear-gradient(135deg, #ff9ed8, #b18cff);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(255, 150, 220, 0.9);
+        }
+        .remove-btn:active { transform: scale(0.9); }
+
+        /* ПАНЕЛЬ СВОИХ ПРЕДЛОЖЕНИЙ */
+        .sentences-panel {
+            margin: 20px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 35px;
+            border: 2px solid rgba(180, 220, 255, 0.35);
+            padding: 18px 20px;
+        }
+        .section-title {
+            color: #c6e6ff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 14px;
+            text-shadow: 0 0 12px rgba(180, 220, 255, 0.7);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-sentence-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 30px;
+            padding: 6px 6px 6px 18px;
+            border: 2px solid rgba(180, 220, 255, 0.25);
+            transition: border-color 0.2s;
+        }
+        .user-sentence-row:focus-within {
+            border-color: #ffc2e8;
+            box-shadow: 0 0 18px rgba(255, 170, 220, 0.5);
+        }
+        .user-sentence-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: #fff;
+            font-weight: 500;
+            padding: 6px 0;
+        }
+        .user-sentence-row input::placeholder {
+            color: rgba(255,255,255,0.45);
+            font-style: italic;
+        }
+        .user-sentence-row input:focus { color: #ffd0ec; }
+        .icon-btn {
+            background: linear-gradient(135deg, #ff9ed8, #b18cff);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 0.9rem;
+            box-shadow: 0 0 12px rgba(255, 150, 220, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-btn:active { transform: scale(0.92); }
+
+        .add-sentence-btn {
+            background: linear-gradient(135deg, #9ed8ff, #c8b8ff);
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 10px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #22134a;
+            box-shadow: 0 0 18px rgba(180, 200, 255, 0.65), 0 4px 0 rgba(100, 80, 180, 0.5);
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .add-sentence-btn:active { transform: translateY(2px); }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px 10px;
+            flex-wrap: wrap;
+        }
+        .ctrl-btn {
+            background: linear-gradient(135deg, #9ed8ff, #c8b8ff);
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 10px 26px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #22134a;
+            box-shadow: 0 0 18px rgba(180, 200, 255, 0.65), 0 4px 0 rgba(100, 80, 180, 0.5);
+            letter-spacing: 0.5px;
+        }
+        .ctrl-btn:active { transform: translateY(2px); }
+
+        .empty-hint {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.75rem;
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+            padding: 15px 0;
+        }
+
+        @media (max-width: 680px) {
+            .item-card { width: 80px; height: 90px; }
+            .item-card img { max-height: 55px; }
+            .item-card .item-name { font-size: 0.55rem; }
+            .item-card .placeholder-mini { height: 55px; font-size: 0.55rem; }
+            .placed-item { width: 65px; }
+            .placed-item img { max-height: 40px; }
+            .placed-item .placeholder-mini { height: 40px; font-size: 0.5rem; }
+            .header h1 { font-size: 1.3rem; }
+            .room-name { font-size: 1rem; }
+            .room-avatar { width: 42px; height: 42px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="header">
+        <h1><i class="fas fa-couch"></i> Sort Furniture by Rooms <i class="fas fa-door-open"></i></h1>
+        <div class="sub">Drag items into rooms → listen → write your own sentence</div>
+    </div>
+
+    <!-- Панель предметов -->
+    <div class="items-panel">
+        <div class="items-title"><i class="fas fa-hand-pointer"></i> Drag these items into rooms:</div>
+        <div class="items-tray" id="itemsTray"></div>
+    </div>
+
+    <!-- Комнаты -->
+    <div class="rooms-grid" id="roomsGrid"></div>
+
+    <!-- Панель своих предложений -->
+    <div class="sentences-panel">
+        <div class="section-title"><i class="fas fa-pen-fancy"></i> Your sentences — write what you hear:</div>
+        <div id="userSentencesList"></div>
+        <button class="add-sentence-btn" id="addSentenceBtn">
+            <i class="fas fa-plus"></i> Add sentence
+        </button>
+    </div>
+
+    <!-- Кнопки -->
+    <div class="controls">
+        <button class="ctrl-btn" id="clearBtn"><i class="fas fa-trash"></i> Clear all</button>
+    </div>
+</div>
+
+<script>
+    // ============ ДАННЫЕ ============
+    const items = [
+        { name: "fridge" }, { name: "armchair" }, { name: "bath" }, { name: "bed" },
+        { name: "chair" }, { name: "desk" }, { name: "shelf" }, { name: "shower" },
+        { name: "sofa" }, { name: "table" }, { name: "wardrobe" }, { name: "mirror" },
+        { name: "TV" }, { name: "cupboard" }, { name: "cooker" }
+    ];
+
+    const roomsData = [
+        { id: "kitchen",     name: "kitchen",     avatarName: "Kitchen",    placeholder: "🍳" },
+        { id: "bathroom",    name: "bathroom",    avatarName: "Bathroom",   placeholder: "🛁" },
+        { id: "bedroom",     name: "bedroom",     avatarName: "Bedroom",    placeholder: "🛏️" },
+        { id: "kidsroom",    name: "kids room",   avatarName: "Kidsroom",   placeholder: "🧸" },
+        { id: "livingroom",  name: "living room", avatarName: "Livingroom", placeholder: "🛋️" },
+        { id: "hall",        name: "hall",        avatarName: "Hall",       placeholder: "🚪" }
+    ];
+
+    const EXTENSIONS = ["png", "jpg", "jpeg"];
+
+    // ============ АУДИО ============
+    let audioCtx = null;
+    function getAudioCtx() {
+        if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            catch (e) { return null; }
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+    }
+
+    function playDropSound() {
+        const ctx = getAudioCtx(); if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.1);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.16, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.2);
+
+        const osc2 = ctx.createOscillator();
+        osc2.type = "triangle";
+        osc2.frequency.setValueAtTime(1400, now + 0.03);
+        osc2.frequency.exponentialRampToValueAtTime(2000, now + 0.14);
+        const gain2 = ctx.createGain();
+        gain2.gain.setValueAtTime(0.0001, now + 0.03);
+        gain2.gain.exponentialRampToValueAtTime(0.08, now + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.17);
+        osc2.connect(gain2).connect(ctx.destination);
+        osc2.start(now + 0.03); osc2.stop(now + 0.19);
+    }
+
+    function playRemoveSound() {
+        const ctx = getAudioCtx(); if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(700, now);
+        osc.frequency.exponentialRampToValueAtTime(350, now + 0.14);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.18);
+    }
+
+    // 🔊 Озвучка (британский английский)
+    function speakSentence(text) {
+        if (!text || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-GB";
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        const voices = window.speechSynthesis.getVoices();
+        const gb = voices.find(v => v.lang === "en-GB") ||
+                   voices.find(v => v.lang.startsWith("en-GB")) ||
+                   voices.find(v => v.lang === "en_GB");
+        if (gb) utterance.voice = gb;
+        window.speechSynthesis.speak(utterance);
+    }
+    if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    // ============ ЗАГРУЗКА КАРТИНОК ============
+    function loadImage(name) {
+        return new Promise((resolve) => {
+            let extIndex = 0;
+            function attempt() {
+                if (extIndex >= EXTENSIONS.length) { resolve(null); return; }
+                const ext = EXTENSIONS[extIndex];
+                const img = new Image();
+                img.onload = () => resolve(`${name}.${ext}`);
+                img.onerror = () => { extIndex++; attempt(); };
+                img.src = `${name}.${ext}`;
+            }
+            attempt();
+        });
+    }
+
+    // ============ ПАНЕЛЬ ПРЕДМЕТОВ ============
+    const itemsTray = document.getElementById("itemsTray");
+
+    async function buildItemsTray() {
+        itemsTray.innerHTML = "";
+        for (const item of items) {
+            const src = await loadImage(item.name);
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.draggable = true;
+            card.dataset.name = item.name;
+
+            if (src) {
+                card.innerHTML = `<img src="${src}" alt="${item.name}"><div class="item-name">${item.name}</div>`;
+            } else {
+                card.innerHTML = `<div class="placeholder-mini">${item.name}<br>no img</div><div class="item-name">${item.name}</div>`;
+            }
+
+            card.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", item.name);
+                e.dataTransfer.effectAllowed = "copy";
+            });
+            card.addEventListener("touchstart", touchDragStart, { passive: false });
+            card.addEventListener("touchmove", touchDragMove, { passive: false });
+            card.addEventListener("touchend", touchDragEnd);
+
+            itemsTray.appendChild(card);
+        }
+    }
+
+    // ============ КОМНАТЫ ============
+    const roomsGrid = document.getElementById("roomsGrid");
+
+    async function buildRooms() {
+        roomsGrid.innerHTML = "";
+        for (const r of roomsData) {
+            const src = await loadImage(r.avatarName);
+            const room = document.createElement("div");
+            room.className = "room";
+            room.dataset.room = r.name;
+            room.dataset.roomId = r.id;
+
+            const avatarHTML = src
+                ? `<img class="room-avatar" src="${src}" alt="${r.name}">`
+                : `<div class="room-avatar placeholder">${r.placeholder}</div>`;
+
+            room.innerHTML = `
+                <div class="room-header">
+                    ${avatarHTML}
+                    <span class="room-name">${capitalize(r.name)}</span>
+                </div>
+                <div class="room-zone" data-room="${r.name}">
+                    <div class="empty-hint">Drop items here</div>
+                </div>
+            `;
+            roomsGrid.appendChild(room);
+        }
+        attachRoomEvents();
+    }
+
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    // ============ DRAG & DROP ============
+    let rooms;
+    function attachRoomEvents() {
+        rooms = document.querySelectorAll(".room");
+        rooms.forEach(room => {
+            const zone = room.querySelector(".room-zone");
+            room.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+                room.classList.add("drag-over");
+            });
+            room.addEventListener("dragleave", () => room.classList.remove("drag-over"));
+            room.addEventListener("drop", (e) => {
+                e.preventDefault();
+                room.classList.remove("drag-over");
+                const itemName = e.dataTransfer.getData("text/plain");
+                if (itemName) addItemToRoom(itemName, zone, room.dataset.room);
+            });
+        });
+    }
+
+    // ============ TOUCH DRAG ============
+    let touchGhost = null;
+    let touchItemName = null;
+
+    function touchDragStart(e) {
+        const card = e.currentTarget;
+        touchItemName = card.dataset.name;
+        const touch = e.touches[0];
+        touchGhost = document.createElement("div");
+        touchGhost.className = "item-card";
+        touchGhost.style.position = "fixed";
+        touchGhost.style.pointerEvents = "none";
+        touchGhost.style.zIndex = "9999";
+        touchGhost.style.opacity = "0.85";
+        touchGhost.style.left = (touch.clientX - 50) + "px";
+        touchGhost.style.top = (touch.clientY - 55) + "px";
+        touchGhost.innerHTML = card.innerHTML;
+        document.body.appendChild(touchGhost);
+        e.preventDefault();
+    }
+
+    function touchDragMove(e) {
+        if (!touchGhost) return;
+        const touch = e.touches[0];
+        touchGhost.style.left = (touch.clientX - 50) + "px";
+        touchGhost.style.top = (touch.clientY - 55) + "px";
+        rooms.forEach(r => r.classList.remove("drag-over"));
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const room = el ? el.closest(".room") : null;
+        if (room) room.classList.add("drag-over");
+        e.preventDefault();
+    }
+
+    function touchDragEnd(e) {
+        if (touchGhost) {
+            const touch = e.changedTouches[0];
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            const room = el ? el.closest(".room") : null;
+            if (room && touchItemName) {
+                const zone = room.querySelector(".room-zone");
+                addItemToRoom(touchItemName, zone, room.dataset.room);
+            }
+            touchGhost.remove();
+            touchGhost = null;
+            touchItemName = null;
+            rooms.forEach(r => r.classList.remove("drag-over"));
+        }
+    }
+
+    // ============ ДОБАВЛЕНИЕ ПРЕДМЕТА + АВТО-ОЗВУЧКА ============
+    async function addItemToRoom(itemName, zone, roomName) {
+        const hint = zone.querySelector(".empty-hint");
+        if (hint) hint.remove();
+
+        const src = await loadImage(itemName);
+        const placed = document.createElement("div");
+        placed.className = "placed-item";
+        placed.dataset.name = itemName;
+
+        if (src) {
+            placed.innerHTML = `<img src="${src}" alt="${itemName}"><div class="placed-name">${itemName}</div>`;
+        } else {
+            placed.innerHTML = `<div class="placeholder-mini">${itemName}</div><div class="placed-name">${itemName}</div>`;
+        }
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-btn";
+        removeBtn.innerHTML = "×";
+        removeBtn.addEventListener("click", () => {
+            playRemoveSound();
+            placed.remove();
+            if (zone.querySelectorAll(".placed-item").length === 0) {
+                zone.innerHTML = '<div class="empty-hint">Drop items here</div>';
+            }
+            saveState();
+        });
+        placed.appendChild(removeBtn);
+        zone.appendChild(placed);
+
+        // 🎵 звук перетаскивания
+        playDropSound();
+
+        // 🔊 автоозвучка предложения через 300мс
+        const article = (itemName === "armchair") ? "an" : "a";
+        const text = `There is ${article} ${itemName} in the ${roomName}.`;
+        setTimeout(() => speakSentence(text), 300);
+
+        saveState();
+    }
+
+    // ============ СВОИ ПРЕДЛОЖЕНИЯ РЕБЁНКА ============
+    const userSentencesList = document.getElementById("userSentencesList");
+
+    function createUserSentenceRow(value = "") {
+        const row = document.createElement("div");
+        row.className = "user-sentence-row";
+        row.innerHTML = `
+            <input type="text" placeholder="e.g. There is a mirror in the bathroom..." value="${value}">
+            <button class="icon-btn speak-user" title="Listen"><i class="fas fa-volume-up"></i></button>
+            <button class="icon-btn remove-user" title="Delete"><i class="fas fa-times"></i></button>
+        `;
+        const input = row.querySelector("input");
+        input.addEventListener("input", saveState);
+        row.querySelector(".speak-user").addEventListener("click", () => {
+            const t = input.value.trim();
+            if (t) speakSentence(t);
+        });
+        row.querySelector(".remove-user").addEventListener("click", () => {
+            playRemoveSound();
+            row.remove();
+            saveState();
+        });
+        return row;
+    }
+
+    function collectUserSentences() {
+        return Array.from(userSentencesList.querySelectorAll("input")).map(i => i.value);
+    }
+
+    function addUserSentence(value = "") {
+        userSentencesList.appendChild(createUserSentenceRow(value));
+    }
+
+    document.getElementById("addSentenceBtn").addEventListener("click", () => {
+        addUserSentence("");
+        saveState();
+        const inputs = userSentencesList.querySelectorAll("input");
+        if (inputs.length) inputs[inputs.length - 1].focus();
+    });
+
+    // ============ СОХРАНЕНИЕ ============
+    function saveState() {
+        const state = {
+            userSentences: collectUserSentences(),
+            rooms: {}
+        };
+        document.querySelectorAll(".room").forEach(room => {
+            const id = room.dataset.roomId;
+            state.rooms[id] = [];
+            room.querySelectorAll(".placed-item").forEach(p => {
+                state.rooms[id].push(p.dataset.name);
+            });
+        });
+        localStorage.setItem("furnitureSortState_v3", JSON.stringify(state));
+    }
+
+    async function loadState() {
+        const raw = localStorage.getItem("furnitureSortState_v3");
+        if (!raw) {
+            addUserSentence("");
+            return;
+        }
+        try {
+            const state = JSON.parse(raw);
+
+            for (const room of document.querySelectorAll(".room")) {
+                const id = room.dataset.roomId;
+                const zone = room.querySelector(".room-zone");
+                const itemsInRoom = state.rooms[id] || [];
+                if (itemsInRoom.length > 0) {
+                    const hint = zone.querySelector(".empty-hint");
+                    if (hint) hint.remove();
+                    for (const itemName of itemsInRoom) {
+                        const src = await loadImage(itemName);
+                        const placed = document.createElement("div");
+                        placed.className = "placed-item";
+                        placed.dataset.name = itemName;
+                        if (src) {
+                            placed.innerHTML = `<img src="${src}" alt="${itemName}"><div class="placed-name">${itemName}</div>`;
+                        } else {
+                            placed.innerHTML = `<div class="placeholder-mini">${itemName}</div><div class="placed-name">${itemName}</div>`;
+                        }
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "remove-btn";
+                        removeBtn.innerHTML = "×";
+                        removeBtn.addEventListener("click", () => {
+                            playRemoveSound();
+                            placed.remove();
+                            if (zone.querySelectorAll(".placed-item").length === 0) {
+                                zone.innerHTML = '<div class="empty-hint">Drop items here</div>';
+                            }
+                            saveState();
+                        });
+                        placed.appendChild(removeBtn);
+                        zone.appendChild(placed);
+                    }
+                }
+            }
+
+            const userArr = state.userSentences || [];
+            if (userArr.length === 0) addUserSentence("");
+            else userArr.forEach(v => addUserSentence(v));
+        } catch (e) {
+            console.warn("loadState error", e);
+            addUserSentence("");
+        }
+    }
+
+    // ============ ОЧИСТКА ============
+    document.getElementById("clearBtn").addEventListener("click", () => {
+        if (!confirm("Clear all rooms and sentences?")) return;
+        document.querySelectorAll(".room-zone").forEach(zone => {
+            zone.innerHTML = '<div class="empty-hint">Drop items here</div>';
+        });
+        userSentencesList.innerHTML = "";
+        addUserSentence("");
+        playRemoveSound();
+        saveState();
+    });
+
+    // ============ СТАРТ ============
+    (async function init() {
+        await buildItemsTray();
+        await buildRooms();
+        await loadState();
+    })();
+</script>
+</body>
+</html>
